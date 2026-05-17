@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Checklist Cabañas</title>
+
+<style>
+  :root {
+    --bg: #0f1a12;
+    --card: #162019;
+    --card2: #1c2820;
+    --green: #4caf72;
+    --green-light: #6fcf89;
+    --green-dim: #2d6b45;
+    --gold: #c9a96e;
+    --text: #e8ede9;
+    --muted: #7a9080;
+    --border: #2a3d2e;
+    --done-bg: #1a3020;
+    --radius: 18px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── HOME SCREEN ─── */
+  #home {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 32px 24px;
+    text-align: center;
+    background: radial-gradient(ellipse at 50% 30%, #1e3d22 0%, #0f1a12 70%);
+  }
+  .logo-mark {
+    width: 64px; height: 64px;
+    border: 2px solid var(--green);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+    animation: pulse-ring 3s ease infinite;
+  }
+  .logo-mark svg { width: 30px; height: 30px; fill: var(--green); }
+  @keyframes pulse-ring {
+    0%,100% { box-shadow: 0 0 0 0 rgba(76,175,114,0.3); }
+    50% { box-shadow: 0 0 0 12px rgba(76,175,114,0); }
+  }
+  .home-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text);
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .home-sub {
+    font-size: 0.8rem;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+  }
+  .cabin-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+    max-width: 360px;
+  }
+  .cabin-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 24px;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cabin-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(76,175,114,0.05) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .cabin-btn:active::before { opacity: 1; }
+  .cabin-btn:active { transform: scale(0.98); }
+  .cabin-icon {
+    width: 44px; height: 44px;
+    background: var(--green-dim);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.3rem;
+  }
+  .cabin-info { flex: 1; }
+  .cabin-name {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+  .cabin-count {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .cabin-arrow { color: var(--green); font-size: 1.2rem; }
+
+  /* ─── CHECKLIST SCREEN ─── */
+  #checklist { display: none; min-height: 100vh; }
+
+  .cl-header {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(15,26,18,0.95);
+    backdrop-filter: blur(10px);
+    padding: 16px 20px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cl-top {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 14px;
+  }
+  .back-btn {
+    background: none; border: none;
+    color: var(--green); font-size: 1.3rem;
+    cursor: pointer; padding: 4px 8px 4px 0;
+    display: flex; align-items: center;
+  }
+  .cl-cabin-name {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    flex: 1;
+  }
+  .cl-counter {
+    font-size: 0.78rem;
+    color: var(--muted);
+    background: var(--card2);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green-dim), var(--green));
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+
+  .cl-body { padding: 24px 20px 120px; }
+
+  /* area header */
+  .area-header {
+    display: flex; align-items: center; gap: 10px;
+    margin: 24px 0 12px;
+  }
+  .area-header:first-child { margin-top: 0; }
+  .area-dot {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .area-name {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+
+  /* task card */
+  .task-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .task-card::after {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--green);
+    transform: scaleY(0);
+    transition: transform 0.25s ease;
+    border-radius: 0 2px 2px 0;
+  }
+  .task-card.done {
+    background: var(--done-bg);
+    border-color: var(--green-dim);
+  }
+  .task-card.done::after { transform: scaleY(1); }
+  .task-card:active { transform: scale(0.99); }
+
+  .check-circle {
+    width: 26px; height: 26px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.25s ease;
+    background: transparent;
+  }
+  .task-card.done .check-circle {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  .check-circle svg {
+    width: 14px; height: 14px;
+    fill: none; stroke: #fff;
+    stroke-width: 2.5;
+    stroke-linecap: round; stroke-linejoin: round;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.2s ease;
+  }
+  .task-card.done .check-circle svg {
+    opacity: 1;
+    transform: scale(1);
+  }
+  .task-text {
+    font-size: 0.88rem;
+    line-height: 1.4;
+    flex: 1;
+    transition: color 0.25s;
+  }
+  .task-card.done .task-text {
+    color: var(--muted);
+    text-decoration: line-through;
+    text-decoration-color: var(--green-dim);
+  }
+
+  /* ─── SUMMARY SCREEN ─── */
+  #summary {
+    display: none;
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 50% 0%, #1e3d22 0%, #0f1a12 60%);
+  }
+  .sum-header {
+    padding: 20px 20px 0;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .sum-body { padding: 24px 20px 120px; }
+  .sum-hero {
+    text-align: center;
+    padding: 32px 0 28px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+  .sum-icon {
+    width: 72px; height: 72px;
+    background: var(--green);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    font-size: 2rem;
+    box-shadow: 0 0 40px rgba(76,175,114,0.3);
+    animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes pop {
+    from { transform: scale(0); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .sum-title {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.5rem;
+    font-weight: 300;
+    margin-bottom: 6px;
+  }
+  .sum-meta {
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .sum-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .stat-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--green);
+    display: block;
+  }
+  .stat-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .sum-section { margin-bottom: 16px; }
+  .sum-area-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+  .sum-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+  .sum-item:last-child { border-bottom: none; }
+  .sum-tick { color: var(--green); font-size: 0.9rem; }
+  .sum-pend { color: #e57373; font-size: 0.9rem; }
+
+  /* message box */
+  #msg-box {
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--muted);
+    white-space: pre-wrap;
+    margin-bottom: 16px;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+  }
+
+  /* buttons */
+  .btn-primary {
+    width: 100%;
+    background: var(--green);
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #0f1a12;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+  }
+  .btn-primary:active { transform: scale(0.98); background: var(--green-light); }
+  .btn-secondary {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px;
+    font-family: -apple-system, 'Helvetica Neue', sans-serif;
+    font-size: 0.9rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+  }
+  .btn-secondary:active { background: var(--card2); }
+
+  /* floating finish btn */
+  .float-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 20px 28px;
+    background: linear-gradient(to top, var(--bg) 70%, transparent);
+    pointer-events: none;
+  }
+  .float-bar button { pointer-events: all; }
+
+  /* toast */
+  #toast {
+    position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: var(--green);
+    color: #0f1a12;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 20px;
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .incomplete-warning {
+    background: rgba(229,115,115,0.1);
+    border: 1px solid rgba(229,115,115,0.3);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-size: 0.82rem;
+    color: #ef9a9a;
+    margin-bottom: 16px;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<!-- HOME -->
+<div id="home">
+  <div class="logo-mark">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+  </div>
+  <h1 class="home-title">Checklist<br>Cabañas</h1>
+  <p class="home-sub">Logística & entrega</p>
+  <div class="cabin-cards">
+    <button class="cabin-btn" onclick="startChecklist(0)">
+      <div class="cabin-icon">🌿</div>
+      <div class="cabin-info">
+        <div class="cabin-name">El Nido</div>
+        <div class="cabin-count" id="count0">Cargando...</div>
+      </div>
+      <div class="cabin-arrow">›</div>
+    </button>
+    <button class="cabin-btn" onclick="startChecklist(1)">
+      <div class="cabin-icon">🏔️</div>
+      <div class="cabin-info">
+        <div class="cabin-name">El Horizonte</div>
+        <div class="cabin-count" id="count1">Cargando...</div>
+      </div>
+      <div class="cabin-arrow">›</div>
+    </button>
+  </div>
+</div>
+
+<!-- CHECKLIST -->
+<div id="checklist">
+  <div class="cl-header">
+    <div class="cl-top">
+      <button class="back-btn" onclick="goHome()">‹</button>
+      <span class="cl-cabin-name" id="cl-title"></span>
+      <span class="cl-counter" id="cl-counter">0/0</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  </div>
+  <div class="cl-body" id="cl-body"></div>
+  <div class="float-bar">
+    <button class="btn-primary" onclick="finishChecklist()">Ver resumen →</button>
+  </div>
+</div>
+
+<!-- SUMMARY -->
+<div id="summary">
+  <div class="sum-header">
+    <button class="back-btn" onclick="backToChecklist()">‹</button>
+    <span style="font-size:0.85rem; color:var(--muted)">Resumen</span>
+  </div>
+  <div class="sum-body">
+    <div class="sum-hero">
+      <div class="sum-icon" id="sum-icon">✓</div>
+      <div class="sum-title" id="sum-title">¡Listo!</div>
+      <div class="sum-meta" id="sum-meta"></div>
+    </div>
+    <div class="sum-stats">
+      <div class="stat-box">
+        <span class="stat-num" id="stat-done">0</span>
+        <span class="stat-label">Completadas</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num" id="stat-pend" style="color:var(--gold)">0</span>
+        <span class="stat-label">Pendientes</span>
+      </div>
+    </div>
+    <div class="incomplete-warning" id="warn-incomplete">
+      ⚠️ Hay tareas pendientes. Puedes enviar el resumen o volver a completarlas.
+    </div>
+    <div id="sum-sections"></div>
+    <p style="font-size:0.75rem;color:var(--muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:0.1em">Mensaje para copiar</p>
+    <div id="msg-box"></div>
+    <button class="btn-primary" onclick="copyMsg()">📋 Copiar mensaje</button>
+    <button class="btn-secondary" onclick="newCheck()">Nuevo checklist</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const CABINS = [
+  {
+    name: "El Nido",
+    emoji: "🌿",
+    areas: [
+      { area: "Cocina", tasks: [
+        "Limpiar Estufa","Limpiar Quemadores y parrilla","Limpiar alrededor de la estufa",
+        "Limpiar escurridor de platos","Limpiar fregador","Limpiar tapa de fregador",
+        "Limpiar nevera por dentro y fuera","Pasar paño por mueble de cocina interno",
+        "Pasar paño por mueble de cocina externo","Lavar tanque de basura",
+        "Colocar bolsas de basura","Dejar bolsa de basura extra (más de una noche)",
+        "Toallita de limpiar","Limpiones (cambiar si es necesario)","Refil de jabón para fregar",
+        "Refil de esponja","Refil de azúcar","Refil de café","Refil de sal","Refil de aceite",
+        "Encender la estufa para confirmar si hay gas","Probar refil y dejar refil si es necesario"
+      ]},
+      { area: "Sala / Comedor", tasks: [
+        "Levantar y sacudir sofá","Aromatizador para los cojines de sofá",
+        "Limpiar mesa de comedor","Limpiar tapetes","Limpiar rieles de las ventanas",
+        "Limpiar rieles de la puerta de terraza","Limpiar mueble auxiliar con WD40",
+        "Limpiar todo lo que esté en el mueble auxiliar","Revisar insumos de botiquín",
+        "Limpiar puerta principal (por dentro y fuera)","Sacudir paredes"
+      ]},
+      { area: "Recámara", tasks: [
+        "Cambiar sábanas","Cambiar fundas","Desinfectar con Lysol cama",
+        "Desinfectar con Lysol almohadas","Desinfectar con Lysol edrón o cambiar edrón de ser necesario",
+        "Aromatizar toda el área de la recámara","Aromatizar manta decorativa",
+        "Aromatizar cortinas","Limpiar abanicos","Poner a cargar abanicos de ser necesario",
+        "Limpiar mesitas de noche","Limpiar rieles de ventana"
+      ]},
+      { area: "Terraza", tasks: [
+        "Limpiar mesita auxiliar, por dentro y fuera",
+        "Limpiar sillas (verificar las patas de sillas)","Limpiar verjas de balcón"
+      ]},
+      { area: "Baño", tasks: [
+        "Limpiar servicio","Lavar baño","Lavar trampa de baño","Lavar tanque de basura",
+        "Colocar bolsas de basura","Refil de bolsa de basura y papel higiénico (+1 de una noche)",
+        "Pasar paño por portapapel","Refil de papel higiénico","Lavar lavamanos",
+        "Limpiar refil de jabón","Limpiar bandejita auxiliar","Refil de jabón para manos",
+        "Limpiar mesita auxiliar, por dentro y fuera","Limpiar patas de mesas",
+        "Limpiar y secar área de jabón de baño","Limpiar auxiliar para guindar ropa",
+        "Limpiar espejo","Revisar y limpiar escobita para huéspedes","Refil de jabón de baño",
+        "Toallita de mano","Toallita de piso","Toallas de baño","Toallas de río",
+        "Limpiar puerta principal (por dentro y fuera)","Limpiar lámparas",
+        "Limpiar regadera","Limpiar llave de mano","Sacudir paredes"
+      ]},
+      { area: "BBQ", tasks: [
+        "Limpiar parrilla","Limpiar asador por dentro y fuera (incluyendo patas)",
+        "Limpiar fregador","Limpiar tapa de fregador","Limpiar alrededor del fregador",
+        "Limpiar mesita auxiliar","Sacudir sillas azules","Limpiar cooler",
+        "Lavar utensilios del BBQ","Refil de leña","Refil de carbón",
+        "Colocar aceite para asar","Colocar cartón para asar",
+        "Probar encendedor y dejar refil si es necesario","Barrer o lavar piso",
+        "Limpiar las vigas","Limpiar paredes por telarañas"
+      ]},
+      { area: "Fogata", tasks: [
+        "Limpiar la paila de la fogata","Limpiar sillas y mesita","Limpiar estructura de la fogata"
+      ]},
+      { area: "General", tasks: [
+        "Sacudir y aromatizar hamacas","Trapear","Barrer después de trapear",
+        "Aromatizar toda la cabaña","Limpiar o lavar alfombras exteriores",
+        "Limpiar escaleras","Limpiar verjas de escaleras","Limpiar canaletas",
+        "Limpiar puerta de depósito","Probar luces interiores y exteriores",
+        "Probar lámparas de batería"
+      ]}
+    ]
+  },
+  {
+    name: "El Horizonte",
+    emoji: "🏔️",
+    areas: [
+      { area: "Cocina", tasks: [
+        "Limpiar Estufa","Limpiar Quemadores y parrilla","Limpiar alrededor de la estufa",
+        "Limpiar cubre brisa de la estufa","Limpiar tanque de gas","Limpiar carrete de la cocina",
+        "Limpiar escurridor de platos","Limpiar fregador","Limpiar tapa de fregador",
+        "Pasar paño por el mueble de granito","Limpiar mueble de cocina auxiliar de madera",
+        "Limpiar por dentro y fuera los contenedores que están en el mueble auxiliar",
+        "Limpiar nevera por dentro y fuera","Limpiar mueble de nevera (las barras chocolates)",
+        "Limpiar el área en donde están los contenedores de pailas",
+        "Limpiar por dentro y fuera los contenedores de pailas",
+        "Lavar tanque de basura","Colocar bolsas de basura",
+        "Dejar bolsa de basura extra (más de una noche)","Toallita de limpiar",
+        "Limpiones (cambiar si es necesario)","Probar encendedor y dejar refil si es necesario",
+        "Refil de jabón para fregar","Refil de esponja","Refil de azúcar","Refil de café",
+        "Refil de sal","Refil de aceite","Encender la estufa para confirmar si hay gas"
+      ]},
+      { area: "Sala / Comedor", tasks: [
+        "Levantar y sacudir sofá","Aromatizador para los cojines de sofá",
+        "Limpiar mesa de comedor","Limpiar sillas de comedor","Limpiar tapetes",
+        "Limpiar carretes","Limpiar mesita de centro",
+        "Limpiar puerta principal (por dentro y fuera)","Sacudir paredes",
+        "Limpiar los palets de los sofás"
+      ]},
+      { area: "Recámara", tasks: [
+        "Cambiar sábanas","Cambiar fundas","Desinfectar con Lysol cama",
+        "Desinfectar con Lysol almohadas","Desinfectar con Lysol edrón o cambiar edrón de ser necesario",
+        "Aromatizar toda el área de la recámara","Aromatizar manta decorativa",
+        "Aromatizar cortinas","Limpiar abanicos","Poner a cargar abanicos de ser necesario",
+        "Limpiar mesitas de noche","Limpiar área de entretenimiento",
+        "Limpiar rieles de ventana","Limpiar marcos de cuadro","Limpiar auxiliar para guindar ropa"
+      ]},
+      { area: "Baño", tasks: [
+        "Limpiar servicio","Lavar baño","Lavar auxiliar que está en el baño",
+        "Lavar puerta de vidrio","Lavar tanque de basura","Colocar bolsas de basura",
+        "Refil de bolsa de basura y papel higiénico (+1 de una noche)",
+        "Pasar paño por portapapel","Refil de papel higiénico","Lavar lavamanos",
+        "Limpiar refil de jabón","Limpiar bandejitas auxiliares",
+        "Limpiar muebles auxiliares chocolates","Limpiar mueble para guindar ropa",
+        "Refil de jabón para manos","Refil de jabón de baño","Toallita de mano",
+        "Toallita de piso","Toallas de baño","Toallas de río",
+        "Limpiar puerta principal (por dentro y fuera)","Limpiar regadera",
+        "Limpiar llave de mano","Limpiar espejo","Sacudir paredes","Revisar insumos de botiquín"
+      ]},
+      { area: "BBQ", tasks: [
+        "Limpiar parrilla","Limpiar área del asador","Limpiar cooler",
+        "Lavar utensilios del BBQ","Refil de leña","Refil de carbón",
+        "Colocar aceite para asar","Colocar cartón para asar","Limpiar paredes por telarañas"
+      ]},
+      { area: "General", tasks: [
+        "Limpiar área de la fogata","Aromatizar las hamacas","Aromatizar cojín de pérgola",
+        "Trapear","Barrer después de trapear","Aromatizar toda la cabaña",
+        "Limpiar o lavar alfombras exteriores","Limpiar área alrededor de la cabaña",
+        "Limpiar canaletas","Probar luces interiores y exteriores","Probar lámparas de batería"
+      ]}
+    ]
+  }
+];
+
+// State
+let currentCabin = 0;
+let checked = {};
+
+function totalTasks(cabinIdx) {
+  return CABINS[cabinIdx].areas.reduce((s, a) => s + a.tasks.length, 0);
+}
+
+// Init counts
+document.getElementById('count0').textContent = totalTasks(0) + ' tareas';
+document.getElementById('count1').textContent = totalTasks(1) + ' tareas';
+
+function startChecklist(cabinIdx) {
+  currentCabin = cabinIdx;
+  checked = {};
+  renderChecklist();
+  show('checklist');
+}
+
+function renderChecklist() {
+  const cabin = CABINS[currentCabin];
+  document.getElementById('cl-title').textContent = cabin.name;
+  const body = document.getElementById('cl-body');
+  body.innerHTML = '';
+
+  cabin.areas.forEach((section, si) => {
+    const ah = document.createElement('div');
+    ah.className = 'area-header';
+    ah.innerHTML = `<div class="area-dot"></div><div class="area-name">${section.area}</div>`;
+    body.appendChild(ah);
+
+    section.tasks.forEach((task, ti) => {
+      const key = `${si}-${ti}`;
+      const card = document.createElement('div');
+      card.className = 'task-card' + (checked[key] ? ' done' : '');
+      card.id = 'task-' + key;
+      card.onclick = () => toggleTask(key, card);
+      card.innerHTML = `
+        <div class="check-circle">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="task-text">${task}</div>`;
+      body.appendChild(card);
+    });
+  });
+  updateProgress();
+}
+
+function toggleTask(key, card) {
+  checked[key] = !checked[key];
+  card.classList.toggle('done', checked[key]);
+  updateProgress();
+}
+
+function updateProgress() {
+  const cabin = CABINS[currentCabin];
+  let total = 0, done = 0;
+  cabin.areas.forEach((s, si) => {
+    s.tasks.forEach((_, ti) => {
+      total++;
+      if (checked[`${si}-${ti}`]) done++;
+    });
+  });
+  document.getElementById('cl-counter').textContent = `${done}/${total}`;
+  document.getElementById('progress-fill').style.width = (done / total * 100) + '%';
+}
+
+function finishChecklist() {
+  buildSummary();
+  show('summary');
+}
+
+function buildSummary() {
+  const cabin = CABINS[currentCabin];
+  const now = new Date();
+  const dateStr = now.toLocaleDateString('es-PA', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+  const timeStr = now.toLocaleTimeString('es-PA', {hour:'2-digit', minute:'2-digit'});
+
+  let total = 0, done = 0;
+  cabin.areas.forEach((s, si) => s.tasks.forEach((_, ti) => { total++; if (checked[`${si}-${ti}`]) done++; }));
+  const pend = total - done;
+
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-pend').textContent = pend;
+  document.getElementById('sum-meta').textContent = `${cabin.name} · ${dateStr} · ${timeStr}`;
+
+  if (pend === 0) {
+    document.getElementById('sum-icon').textContent = '✓';
+    document.getElementById('sum-title').textContent = '¡Todo listo!';
+    document.getElementById('warn-incomplete').style.display = 'none';
+  } else {
+    document.getElementById('sum-icon').textContent = '⚠';
+    document.getElementById('sum-icon').style.background = '#c9a96e';
+    document.getElementById('sum-title').textContent = 'Checklist incompleto';
+    document.getElementById('warn-incomplete').style.display = 'block';
+  }
+
+  // Sections
+  const sec = document.getElementById('sum-sections');
+  sec.innerHTML = '';
+  cabin.areas.forEach((s, si) => {
+    const div = document.createElement('div');
+    div.className = 'sum-section';
+    div.innerHTML = `<div class="sum-area-title">${s.area}</div>`;
+    s.tasks.forEach((task, ti) => {
+      const key = `${si}-${ti}`;
+      const isDone = checked[key];
+      const row = document.createElement('div');
+      row.className = 'sum-item';
+      row.innerHTML = `<span class="${isDone ? 'sum-tick' : 'sum-pend'}">${isDone ? '✓' : '✗'}</span><span>${task}</span>`;
+      div.appendChild(row);
+    });
+    sec.appendChild(div);
+  });
+
+  // Build message
+  let msg = `✅ CHECKLIST ${cabin.name.toUpperCase()}\n`;
+  msg += `📅 ${dateStr}\n🕐 ${timeStr}\n`;
+  msg += `📊 ${done}/${total} tareas completadas\n`;
+  if (pend > 0) msg += `⚠️ ${pend} tarea(s) pendiente(s)\n`;
+  msg += '\n';
+
+  cabin.areas.forEach((s, si) => {
+    const areaDone = s.tasks.filter((_, ti) => checked[`${si}-${ti}`]).length;
+    const allDone = areaDone === s.tasks.length;
+    msg += `${allDone ? '✅' : '⚠️'} ${s.area} (${areaDone}/${s.tasks.length})\n`;
+    if (!allDone) {
+      s.tasks.forEach((task, ti) => {
+        if (!checked[`${si}-${ti}`]) msg += `  • Pendiente: ${task}\n`;
+      });
+    }
+  });
+
+  msg += `\n— Enviado desde Checklist Cabañas`;
+  document.getElementById('msg-box').textContent = msg;
+}
+
+function copyMsg() {
+  const msg = document.getElementById('msg-box').textContent;
+  navigator.clipboard.writeText(msg).then(() => {
+    showToast('¡Copiado! Pégalo en WhatsApp');
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = msg; document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('¡Copiado!');
+  });
+}
+
+function newCheck() { show('home'); }
+function goHome() { show('home'); }
+function backToChecklist() { show('checklist'); }
+
+function show(screenId) {
+  ['home','checklist','summary'].forEach(id => {
+    document.getElementById(id).style.display = id === screenId ? (id === 'home' ? 'flex' : 'block') : 'none';
+  });
+  window.scrollTo(0, 0);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+</script>
+</body>
+</html>
